@@ -1,6 +1,7 @@
 import * as React from "react";
 import {
     List,
+    SimpleList,
     Datagrid,
     TextField,
     ReferenceField,
@@ -13,25 +14,43 @@ import {
     TextInput,
 } from 'react-admin';
 
+import { useMediaQuery } from '@material-ui/core';
 
-export const PostList = props => (
-    <List {...props}>
-
-      <Datagrid>
-          <TextField source="id" />
-            <ReferenceField source="userId" reference="users">
-                <TextField source="name" />
-            </ReferenceField>
-
-            <TextField source="title" />
-
-           <EditButton />
-        </Datagrid>
-    </List>
-);
-
+const postFilters = [
+    <TextInput source="q" label="Search" alwaysOn />,
+    <ReferenceInput source="userId" label="User" reference="users" allowEmpty>
+        <SelectInput optionText="name" />
+    </ReferenceInput>,
+];
+export const PostList = (props) => {
+    const isSmall = useMediaQuery(theme => theme.breakpoints.down('sm'));
+    return (
+        <List {...props}>
+            {isSmall ? (
+                <SimpleList
+                    primaryText={record => record.title}
+                    secondaryText={record => `${record.views} views`}
+                    tertiaryText={record => new Date(record.published_at).toLocaleDateString()}
+                />
+            ) : (
+                <Datagrid>
+                    <TextField source="id" />
+                    <ReferenceField label="User" source="userId" reference="users">
+                        <TextField source="name" />
+                    </ReferenceField>
+                    <TextField source="title" />
+                    <TextField source="body" />
+                    <EditButton />
+                </Datagrid>
+            )}
+        </List>
+    );
+}
+const PostTitle = ({ record }) => {
+        return <span>Post {record ? `"${record.title}"` : ''}</span>;
+    };
     export const PostEdit = props => (
-        <Edit {...props}>
+        <Edit title={<PostTitle />} {...props}>
             <SimpleForm>
             <TextInput disabled source="id" />
                 <ReferenceInput source="userId" reference="users">
@@ -55,3 +74,5 @@ export const PostList = props => (
                 </SimpleForm>
             </Create>
         );
+    
+      
